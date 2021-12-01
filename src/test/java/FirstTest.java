@@ -1,4 +1,5 @@
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.*;
@@ -27,32 +28,37 @@ public class FirstTest {
 
     @Test
     public void myTest() {
-        System.out.println("My first autotest running");
+        Assert.assertEquals(1/0, 1);
     }
 
     @Test
     public void test1() {
-        System.out.println("Test №1");
+        Assert.assertEquals(4, 2+2);
     }
 
     @Test
     public void test2() {
-        System.out.println("Test №2");
+        Assert.assertEquals(5, 2+2);
     }
 
     @Test
     public void test3() {
-        System.out.println("Test №3");
+        Assert.assertTrue(2+2==4);
     }
 
     @Test
     public void test4() {
-        System.out.println("Test №4");
+        Assert.assertTrue(2+2==5);
     }
 
     @Test
     public void test5() {
-        System.out.println("Test №5");
+       Assertions.assertAll(
+               () -> Assert.assertEquals(4, 2+2),
+               () -> Assert.assertEquals(5, 2+2),
+               () -> Assert.assertTrue(2+2==4),
+               () -> Assert.assertTrue(2+2==5)
+       );
     }
 }
 
