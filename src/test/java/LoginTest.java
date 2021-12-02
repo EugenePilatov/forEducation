@@ -1,13 +1,16 @@
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.junit.Assert;
+
 import org.junit.jupiter.api.*;
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.support.ui.WebDriverWait;
+
+
 
 import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.fail;
 
 public class LoginTest {
 
@@ -16,8 +19,8 @@ public class LoginTest {
     /**
      * осуществление первоначальной настройки
      */
-    @BeforeAll
-    public static void setup() {
+    @BeforeEach
+    public void setup() {
         //Запуск драйвера
         WebDriverManager.chromedriver().setup();
         //создание экземпляра драйвера
@@ -27,18 +30,38 @@ public class LoginTest {
         //получение ссылки на страницу входа из файла настроек
         driver.get("https://tt-develop.quality-lab.ru");
         // устанавливаем явное ожидание
-        driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
+        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
     }
 
-    /**
-     * изменение размеров окна и закрытие браузере
-     */
     @Test
-    public void testWindowSize() {
-        driver.manage().window().setSize(new Dimension(200, 100));
-        new WebDriverWait(driver, 10).until(
-                webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
-        driver.manage().window().maximize();
-        driver.quit();
+    public void incorrectUserNameAndPassword() {
+        By locatorForInvalidCredentials = By.xpath("//div[contains (text(), 'Invalid credentials.')]");
+        // предпочитаю взять By,
+        // также можно взять String
+        // но правильно все элементы выносятся в класс с объектами страницы, разумеется
+        driver.findElement(By.xpath("//input[@id='username']")).sendKeys("TestUser");
+        driver.findElement(By.xpath("//input[@id='password']")).sendKeys("Password");
+        try {
+            driver.findElement(locatorForInvalidCredentials);
+            fail();
+        } catch (NoSuchElementException ignored) {
+        }
+        driver.findElement(By.xpath("//input[@value='Войти']")).submit();
+        WebElement invalidCredentialsLocator = driver.findElement(locatorForInvalidCredentials);
+        // я предпочел бы использовать проверку на assertEquals а не просто нахождение элемента,
+        // если бы мы не привязывались к тексту (продемонстрировал ниже), просто для примера
+        Assert.assertEquals(
+                "Проверка на совпадение текста для примера",
+                "Invalid credentials.",
+                driver.findElement(locatorForInvalidCredentials).getText());
+    }
+
+    @AfterEach
+    public void exit() {
+        Assert.assertNotNull(
+                "Проверка на не Null",
+                driver
+        );
+        driver.close();
     }
 }
